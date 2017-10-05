@@ -40,15 +40,14 @@ def test_generate_no_source(pg_db_with_tables):
     assert ' -- ==> col2' in result
 
 
-@pytest.mark.skip
 def test_generate_with_source(pg_db_with_tables):
     result = sql_insert_writer.generate(db_url=pg_db_with_tables,
                                         destination='tab2',
                                         source='tab1')
-    assert 'col1, -- ==> col1' in result
+    assert 'col1,  -- ==> col1' in result
     assert 'col2' not in result
-    assert 'NULL, -- ==> col3' in result
-    assert 'NULL -- ==> col4' in result
+    assert 'NULL,  -- ==> col3' in result
+    assert 'NULL  -- ==> col4' in result
 
 
 @pytest.fixture
