@@ -37,7 +37,7 @@ setup(
     packages=find_packages(include=['sql_insert_writer']),
     entry_points={
         'console_scripts': [
-            'write-insert=sql_insert_writer.cli:main',
+            'sql_insert_writer=sql_insert_writer.cli:main',
         ]
     },
     include_package_data=True,
