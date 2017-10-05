@@ -70,13 +70,14 @@ The output of `sql_insert_writer` will rarely be fully ready to execute, but it 
 
 ## Features
 
+- Supports PostgreSQL, SQLite
 - Accepts [SQLAlchemy database URLs](http://docs.sqlalchemy.org/en/latest/core/engines.html) with `--db` option.  Defaults to environment variable `$DATABASE_URL`.
 - Any number of source tables; columns chosen in order specified
 - Any number of tuples in `VALUES` clause with `--tuples` option
 
 ## Planned features
 
-- Support for non-PostgreSQL databases
+- Support for more databases
 - Approximate column name matches
 - Explicitly cast to destination column type
 - Omit inserts into auto-incrementing primary key columns
