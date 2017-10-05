@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 """Tests for `sql_insert_writer` package."""
 
+import os
+import sqlite3
+import tempfile
+
 import pytest
 import pytest_postgresql
 
@@ -23,27 +27,58 @@ def dsn_to_url(engine, dsn):
                                                              **params)
 
 
+TABLE_DEFINITIONS = [
+    'CREATE TABLE tab1 (col1 serial primary key, col2 text, col3 text, col4 text)',
+    'CREATE TABLE tab2 (col1 serial primary key, col3 text, col4 text)',
+    'CREATE TABLE tab3 (col1 serial primary key, col2 text, col4 text)',
+    'CREATE TABLE tab4 (col1 serial primary key, col2 text, col3 text)',
+]
+
+
 @pytest.fixture
 def pg_db_with_tables(postgresql):
     cur = postgresql.cursor()
-    cur.execute(
-        'CREATE TABLE tab1 (col1 serial primary key, col2 text, col3 text, col4 text)')
-    cur.execute(
-        'CREATE TABLE tab2 (col1 serial primary key, col3 text, col4 text)')
-    cur.execute(
-        'CREATE TABLE tab3 (col1 serial primary key, col2 text, col4 text)')
-    cur.execute(
-        'CREATE TABLE tab4 (col1 serial primary key, col2 text, col3 text)')
+    for table_definition in TABLE_DEFINITIONS:
+        cur.execute(table_definition)
     postgresql.commit()
     db_url = dsn_to_url('postgresql', postgresql.dsn)
     return db_url
 
 
-def test_generate_from_one_value_tuple(pg_db_with_tables):
+@pytest.fixture
+def sqlite_db_with_tables(request):
+    sqlite_file = tempfile.NamedTemporaryFile(delete=False)
+
+    def teardown():
+        os.unlink(sqlite_file.name)
+
+    request.addfinalizer(teardown)
+
+    conn = sqlite3.connect(sqlite_file.name)
+    cur = conn.cursor()
+    for table_definition in TABLE_DEFINITIONS:
+        cur.execute(table_definition)
+    conn.commit()
+    return 'sqlite:///' + sqlite_file.name
+
+
+def _test_generate_from_one_value_tuple(pg_db_with_tables):
     result = sql_insert_writer.generate_from_values(db_url=pg_db_with_tables,
                                                     destination='tab1')
     assert ',  -- ==> col1' in result
     assert '  -- ==> col4' in result
+
+
+def test_generate_from_one_value_tuple_pg(pg_db_with_tables):
+    _test_generate_from_one_value_tuple(pg_db_with_tables)
+
+
+def test_generate_from_one_value_tuple_sqlite(sqlite_db_with_tables):
+    _test_generate_from_one_value_tuple(sqlite_db_with_tables)
+
+# It may be possible to make our fixtures into parameterized fixtures so that
+# each test is run against each database engine, but I wasn't able to figure
+# out how
 
 
 def test_generate_multiple_value_tuples(pg_db_with_tables):
@@ -88,12 +123,14 @@ def test_generate_from_three_sources(pg_db_with_tables):
     assert 'tab2.col3,  -- ==> col3' in result
     assert 'tab2.col4  -- ==> col4' in result
 
+
 def test_generate_from_three_sources_includes_join(pg_db_with_tables):
     result = sql_insert_writer.generate_from_tables(
         db_url=pg_db_with_tables,
         destination='tab1',
         sources=['tab2', 'tab3', 'tab4'])
     assert 'JOIN tab3 ON (tab2' in result
+
 
 def test_bad_dest_table_name_raises(pg_db_with_tables):
     with pytest.raises(sql_insert_writer.BadDBNameError):

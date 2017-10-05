@@ -14,7 +14,7 @@ To install sql_insert_writer, run this command in your terminal:
 
     $ pip install sql_insert_writer
 
-This is the preferred method to install sql_insert_writer, as it will always install the most recent stable release. 
+This is the preferred method to install sql_insert_writer, as it will always install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -45,6 +45,19 @@ Once you have a copy of the source, you can install it with:
 .. code-block:: console
 
     $ python setup.py install
+
+Requirements
+------------
+
+Pip or setup.py should automatically download and install all prerequisites,
+except for a Python database driver package, which should be installed
+for the database you are using:
+
+PostgreSQL: `pip install psycopg2`
+
+SQLite3: (No install necessary)
+
+
 
 
 .. _Github repo: https://github.com/18F/sql_insert_writer

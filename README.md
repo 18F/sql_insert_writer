@@ -59,8 +59,8 @@ FROM animal
 
 ## Rationale
 
-The syntax of `INSERT` statements makes it difficult to tell which destination columns a value is destined for,
-especially in inserts with many columns.  (Our five-column example is not bad, but imagine fifty!)
+The syntax of `INSERT` statements makes it difficult to tell which destination columns a value is intended for,
+especially in inserts with many columns.  (Our five-column example is not bad, but imagine fifty columns!)
 
 Comments can clarify the link between data source and destination, but adding those comments manually is tedious and error-prone.
 
@@ -71,7 +71,7 @@ The output of `sql_insert_writer` will rarely be fully ready to execute, but it 
 ## Features
 
 - Accepts [SQLAlchemy database URLs](http://docs.sqlalchemy.org/en/latest/core/engines.html) with `--db` option.  Defaults to environment variable `$DATABASE_URL`.
-- Any number of source tables; columns chosen in
+- Any number of source tables; columns chosen in order specified
 - Any number of tuples in `VALUES` clause with `--tuples` option
 
 ## Planned features

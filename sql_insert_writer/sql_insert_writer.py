@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
-
+from attrdict import AttrDict
 import records
 """Main module."""
 
@@ -18,7 +17,34 @@ def col_data_pg(db, table_name):
              WHERE table_name=:table_name
              ORDER BY ordinal_position'''
 
-    return db.query(qry, table_name=table_name)
+    return db.query(qry, table_name=table_name).all()
+
+
+def col_data_sqlite(db, table_name):
+    """Gets metadata for a SQLite table's columns"""
+
+    qry = "PRAGMA TABLE_INFO('{}')".format(table_name)
+
+    # `requests` library can't help here, b/c SQLAlchemy does not recognize
+    # PRAGMA as a row-returning statement; must dig down to database driver level
+    # https://bitbucket.org/zzzeek/sqlalchemy/issues/3079/select-statement-returning-0-rows
+
+    # curs = db.db.connection.cursor()
+    # curs.execute(qry)
+    # return [AttrDict({'column_name': row.name, 'data_type': row.type}) for row in curs.fetchall()]
+
+    db.query(qry)
+    curs = db.db.connection.cursor()
+    curs.execute(qry)
+    return [AttrDict({'column_name': row.name,
+                      'data_type': row.type}) for row in db.query(qry)]
+
+
+col_data_functions = {
+    'postgres': col_data_pg,
+    'postgresql': col_data_pg,
+    'sqlite': col_data_sqlite,
+}
 
 
 def col_data(db, table_name):
@@ -28,8 +54,9 @@ def col_data(db, table_name):
         return []  # but do not raise, because we knew there would be none
 
     db_type = db.db_url.split(':')[0]
-    if db_type.startswith('postgres'):
-        result = col_data_pg(db, table_name).all()
+    col_data_function = col_data_functions.get(db_type)
+    if col_data_function:
+        result = col_data_function(db, table_name)
     else:
         raise NotImplementedError('{} not supported'.format(db_type))
 
@@ -75,8 +102,8 @@ def build_from_clause(sources):
 
     from_clause = [sources[0]]
     for join_to in sources[1:]:
-        from_clause.append('JOIN {} ON ({}. = {}.)'.format(
-            join_to, sources[0], join_to))
+        from_clause.append('JOIN {} ON ({}. = {}.)'.format(join_to, sources[0],
+                                                           join_to))
     return '\n'.join(from_clause)
 
 
