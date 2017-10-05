@@ -36,8 +36,8 @@ def pg_db_with_tables(postgresql):
 def test_generate_no_source(pg_db_with_tables):
     result = sql_insert_writer.generate(db_url=pg_db_with_tables,
                                         destination='tab1')
-    assert ', -- ==> col1' in result
-    assert ' -- ==> col2' in result
+    assert ',  -- ==> col1' in result
+    assert '  -- ==> col2' in result
 
 
 def test_generate_with_source(pg_db_with_tables):
@@ -50,32 +50,29 @@ def test_generate_with_source(pg_db_with_tables):
     assert 'NULL  -- ==> col4' in result
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
-
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
+def test_bad_dest_column_raises(pg_db_with_tables):
+    with pytest.raises(sql_insert_writer.BadDBNameError):
+        sql_insert_writer.generate(db_url=pg_db_with_tables,
+                                   destination='no_such_table')
 
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+def test_bad_source_column_raises(pg_db_with_tables):
+    with pytest.raises(sql_insert_writer.BadDBNameError):
+        sql_insert_writer.generate(db_url=pg_db_with_tables,
+                                   destination='tab1',
+                                   source='no_such_table')
 
 
-def test_command_line_interface():
+def test_command_line_interface(pg_db_with_tables):
     """Test the CLI."""
     runner = CliRunner()
-    result = runner.invoke(cli.main, ['my_dest_table'])
+    result = runner.invoke(cli.main, ['tab1', '--db', pg_db_with_tables])
     assert result.exit_code == 0
-    assert 'my_dest_table' in result.output
-    result = runner.invoke(cli.main, ['my_dest_table', '--source',
-                                      'my_source_table'])
+    assert 'tab1' in result.output
+    result = runner.invoke(cli.main, ['tab1', '--source', 'tab2', '--db',
+                                      pg_db_with_tables])
     assert result.exit_code == 0
-    assert 'my_source_table' in result.output
+    assert 'tab2' in result.output
     help_result = runner.invoke(cli.main, ['--help'])
     assert help_result.exit_code == 0
     assert 'source' in help_result.output

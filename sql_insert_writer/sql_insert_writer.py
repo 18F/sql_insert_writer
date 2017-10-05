@@ -6,6 +6,10 @@ import records
 """Main module."""
 
 
+class BadDBNameError(Exception):
+    pass
+
+
 def col_data_pg(db, table_name):
     """Gets metadata for a PostgreSQL table's columns"""
 
@@ -20,11 +24,19 @@ def col_data_pg(db, table_name):
 def col_data(db, table_name):
     """Gets metadata for a table's columns"""
 
+    if not table_name:
+        return []  # but do not raise, because we knew there would be none
+
     db_type = db.db_url.split(':')[0]
     if db_type.startswith('postgres'):
-        return col_data_pg(db, table_name)
+        result = col_data_pg(db, table_name).all()
     else:
         raise NotImplementedError('{} not supported'.format(db_type))
+
+    if len(result) == 0:
+        raise BadDBNameError('No table {} in database'.format(table_name))
+
+    return result
 
 
 INSERT_TEMPLATE = '''
@@ -56,7 +68,7 @@ def generate(db_url, destination, source=None):
 
     source_metadata = {col.column_name: col.data_type
                        for col in col_data(db, source)}
-    columns = col_data(db, destination).all()
+    columns = col_data(db, destination)
 
     for (row_num, col) in enumerate(columns):
         dest_column_block.append(INDENT + col.column_name)
