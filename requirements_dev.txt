@@ -11,3 +11,4 @@ pytest-cov
 codeclimate-test-reporter
 pytest-runner==2.12.1
 codeclimate-test-reporter
+psycopg2==2.7.3.1

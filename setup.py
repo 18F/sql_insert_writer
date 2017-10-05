@@ -13,7 +13,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Click>=6.7',
-    # TODO: put package requirements here
+    'records==0.5.2',
 ]
 
 setup_requirements = [
@@ -23,7 +23,7 @@ setup_requirements = [
 
 test_requirements = [
     'pytest',
-    # TODO: put package test requirements here
+    'psycopg2==2.7.3.1',
 ]
 
 setup(
@@ -37,7 +37,7 @@ setup(
     packages=find_packages(include=['sql_insert_writer']),
     entry_points={
         'console_scripts': [
-            'sql_insert_writer=sql_insert_writer.cli:main'
+            'write-insert=sql_insert_writer.cli:main',
         ]
     },
     include_package_data=True,
