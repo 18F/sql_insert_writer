@@ -8,6 +8,12 @@ import records
 class BadDBNameError(Exception):
     pass
 
+def db_engine_name(db_url):
+    result = db_url.split(':')[0]
+    if result == 'postgres':
+        result = 'postgresql'
+    return result
+
 
 def col_data_pg(db, table_name):
     """Gets metadata for a PostgreSQL table's columns"""
@@ -24,14 +30,8 @@ def col_data_sqlite(db, table_name):
     """Gets metadata for a SQLite table's columns"""
 
     qry = "PRAGMA TABLE_INFO('{}')".format(table_name)
-
-    # `requests` library can't help here, b/c SQLAlchemy does not recognize
-    # PRAGMA as a row-returning statement; must dig down to database driver level
-    # https://bitbucket.org/zzzeek/sqlalchemy/issues/3079/select-statement-returning-0-rows
-
-    # curs = db.db.connection.cursor()
-    # curs.execute(qry)
-    # return [AttrDict({'column_name': row.name, 'data_type': row.type}) for row in curs.fetchall()]
+    # Alas cannot use proper parameters here; not recognized in
+    # the context of a PRAGMA statement
 
     db.query(qry)
     curs = db.db.connection.cursor()
@@ -41,7 +41,6 @@ def col_data_sqlite(db, table_name):
 
 
 col_data_functions = {
-    'postgres': col_data_pg,
     'postgresql': col_data_pg,
     'sqlite': col_data_sqlite,
 }
@@ -50,10 +49,7 @@ col_data_functions = {
 def col_data(db, table_name):
     """Gets metadata for a table's columns"""
 
-    if not table_name:
-        return []  # but do not raise, because we knew there would be none
-
-    db_type = db.db_url.split(':')[0]
+    db_type = db_engine_name(db.db_url)
     col_data_function = col_data_functions.get(db_type)
     if col_data_function:
         result = col_data_function(db, table_name)
@@ -75,14 +71,17 @@ SELECT
 FROM {from_clause}'''
 
 
-def no_value():
+def no_value(db_url):
     """
-    Value to insert when no value known
+    Value to insert when no value known; depends on database engine
     """
-    return 'DEFAULT'
+    if db_engine_name(db_url) == 'postgresql':
+        return 'DEFAULT'
+    else:
+        return 'NULL'
 
 
-def find_source_col(dest_col_name, source_metadata, qualify):
+def find_source_col(dest_col_name, source_metadata, qualify, db_url):
 
     if dest_col_name in source_metadata:
         if qualify:
@@ -91,7 +90,7 @@ def find_source_col(dest_col_name, source_metadata, qualify):
         else:
             return dest_col_name
     else:
-        return no_value()
+        return no_value(db_url)
 
 
 INDENT = ' ' * 2
@@ -145,7 +144,7 @@ def generate_from_tables(db_url, destination, sources, qualify=False):
         else:
             comma = ','
         source_col_name = find_source_col(col.column_name, source_columns,
-                                          qualify)
+                                          qualify, db.db_url)
         source_column_block.append('{}{}{}  -- ==> {}'.format(
             INDENT, source_col_name, comma, col.column_name))
 
@@ -195,7 +194,7 @@ def generate_from_values(db_url, destination, number_of_tuples=1):
             comma = ''
         else:
             comma = ','
-        source_column_block.append('{}{}{}  -- ==> {}'.format(INDENT, no_value(
+        source_column_block.append('{}{}{}  -- ==> {}'.format(INDENT, no_value(db_url
         ), comma, col.column_name))
 
     dest_column_block = ',\n'.join(dest_column_block)

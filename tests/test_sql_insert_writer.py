@@ -78,7 +78,6 @@ def _test_generate_from_one_value_tuple(db_url):
 def test_generate_from_one_value_tuple_pg(pg_db_with_tables):
     _test_generate_from_one_value_tuple(pg_db_with_tables)
 
-
 def test_generate_from_one_value_tuple_sqlite(sqlite_db_with_tables):
     _test_generate_from_one_value_tuple(sqlite_db_with_tables)
 
@@ -87,8 +86,8 @@ def test_generate_from_one_value_tuple_sqlite(sqlite_db_with_tables):
 # out how
 
 
-def _test_generate_multiple_value_tuples(db_url):
-    result = sql_insert_writer.generate_from_values(db_url=db_url,
+def test_generate_multiple_value_tuples_pg(pg_db_with_tables):
+    result = sql_insert_writer.generate_from_values(pg_db_with_tables,
                                                     destination='tab2',
                                                     number_of_tuples=4)
 
@@ -97,26 +96,32 @@ def _test_generate_multiple_value_tuples(db_url):
     assert result.count('DEFAULT  -- ==> col4') == 4
     assert result.count('VALUES') == 1
 
-def test_generate_multiple_value_tuples_pg(pg_db_with_tables):
-    _test_generate_multiple_value_tuples(pg_db_with_tables)
-
 def test_generate_multiple_value_tuples_sqlite(sqlite_db_with_tables):
-    _test_generate_multiple_value_tuples(sqlite_db_with_tables)
+    result = sql_insert_writer.generate_from_values(sqlite_db_with_tables,
+                                                    destination='tab2',
+                                                    number_of_tuples=4)
+
+    assert result.count('NULL,  -- ==> col1') == 4
+    assert result.count('NULL,  -- ==> col3') == 4
+    assert result.count('NULL  -- ==> col4') == 4
+    assert result.count('VALUES') == 1
 
 def _test_generate_from_one_source(db_url):
     result = sql_insert_writer.generate_from_tables(db_url=db_url,
                                                     destination='tab1',
                                                     sources=['tab2'])
     assert 'col1,  -- ==> col1' in result
-    assert 'DEFAULT,  -- ==> col2' in result
     assert 'col3,  -- ==> col3' in result
     assert 'col4  -- ==> col4' in result
+    return result
 
 def test_generate_from_one_source_pg(pg_db_with_tables):
-    _test_generate_from_one_source(pg_db_with_tables)
+    result = _test_generate_from_one_source(pg_db_with_tables)
+    assert 'DEFAULT,  -- ==> col2' in result
 
 def test_generate_from_one_source_sqlite(sqlite_db_with_tables):
-    _test_generate_from_one_source(sqlite_db_with_tables)
+    result = _test_generate_from_one_source(sqlite_db_with_tables)
+    assert 'NULL,  -- ==> col2' in result
 
 def test_generate_from_one_source_with_qualified(pg_db_with_tables):
     result = sql_insert_writer.generate_from_tables(db_url=pg_db_with_tables,
