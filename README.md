@@ -81,6 +81,7 @@ The output of `sql_insert_writer` will rarely be fully ready to execute, but it 
 - Approximate column name matches
 - Explicitly cast to destination column type
 - Omit inserts into auto-incrementing primary key columns
+- Pre-fill JOIN clauses with foreign keys where possible
 
 ## Limitations
 

@@ -2,8 +2,8 @@
 
 from attrdict import AttrDict
 import records
-"""Main module."""
 
+from sqlalchemy.exc import ResourceClosedError
 
 class BadDBNameError(Exception):
     pass
@@ -35,9 +35,12 @@ def col_data_sqlite(db, table_name):
 
     db.query(qry)
     curs = db.db.connection.cursor()
-    curs.execute(qry)
-    return [AttrDict({'column_name': row.name,
-                      'data_type': row.type}) for row in db.query(qry)]
+    try:
+        curs.execute(qry)
+        return [AttrDict({'column_name': row.name,
+                        'data_type': row.type}) for row in db.query(qry)]
+    except ResourceClosedError:  # thus SQLite reacts to nonexistent table
+        return []
 
 
 col_data_functions = {

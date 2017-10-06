@@ -3,17 +3,24 @@
 """Tests for `sql_insert_writer` package."""
 
 import os
+import subprocess
 import sqlite3
 import tempfile
 
 import pytest
 import pytest_postgresql
 
+
 from click import BadOptionUsage
 from click.testing import CliRunner
 
 from sql_insert_writer import cli, sql_insert_writer
 
+try:
+    subprocess.check_output('command -v pg_ctl', shell=True)
+    PG_CTL_MISSING = False  # sorry for the double-negative, but it's convenient later
+except subprocess.CalledProcessError:
+    PG_CTL_MISSING = True
 
 def dsn_to_url(engine, dsn):
     """
@@ -34,9 +41,13 @@ TABLE_DEFINITIONS = [
     'CREATE TABLE tab4 (col1 serial primary key, col2 text, col3 text)',
 ]
 
+# pytest-postgresql works locally, but it contains an unshakeable
+# assumption that it needs to locally manage postgres instances with
+# a local installation of `pg_ctl`, which is incompatible with CircleCI.
 
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
 @pytest.fixture
-def pg_db_with_tables(postgresql):
+def pg_url(postgresql):
     cur = postgresql.cursor()
     for table_definition in TABLE_DEFINITIONS:
         cur.execute(table_definition)
@@ -46,7 +57,7 @@ def pg_db_with_tables(postgresql):
 
 
 @pytest.fixture
-def sqlite_db_with_tables(request):
+def sqlite_url(request):
     sqlite_file = tempfile.NamedTemporaryFile(delete=False)
 
     def teardown():
@@ -61,12 +72,14 @@ def sqlite_db_with_tables(request):
     conn.commit()
     return 'sqlite:///' + sqlite_file.name
 
-# @pytest.fixture(params=[sqlite_db_with_tables, pg_db_with_tables])
+# @pytest.fixture(params=[sqlite_url, pg_url])
 # def all_db_with_tables(request, postgresql):
 #     return request.param(request=request, postgresql=postgresql)
-#     # Fails with pg_db_with_tables() got an unexpected keyword argument 'request'
+#     # Fails with pg_url() got an unexpected keyword argument 'request'
 #     # or AttributeError: 'function' object has no attribute '_instantiate_plugins'
 
+
+# test INSERT... VALUES, one tuple
 
 def _test_generate_from_one_value_tuple(db_url):
     result = sql_insert_writer.generate_from_values(db_url=db_url,
@@ -74,20 +87,18 @@ def _test_generate_from_one_value_tuple(db_url):
     assert ',  -- ==> col1' in result
     assert '  -- ==> col4' in result
 
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_generate_from_one_value_tuple_pg(pg_url):
+    _test_generate_from_one_value_tuple(pg_url)
 
-def test_generate_from_one_value_tuple_pg(pg_db_with_tables):
-    _test_generate_from_one_value_tuple(pg_db_with_tables)
+def test_generate_from_one_value_tuple_sqlite(sqlite_url):
+    _test_generate_from_one_value_tuple(sqlite_url)
 
-def test_generate_from_one_value_tuple_sqlite(sqlite_db_with_tables):
-    _test_generate_from_one_value_tuple(sqlite_db_with_tables)
+# test INSERT... VALUES, multiple tuples
 
-# It may be possible to make our fixtures into parameterized fixtures so that
-# each test is run against each database engine, but I wasn't able to figure
-# out how
-
-
-def test_generate_multiple_value_tuples_pg(pg_db_with_tables):
-    result = sql_insert_writer.generate_from_values(pg_db_with_tables,
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_generate_multiple_value_tuples_pg(pg_url):
+    result = sql_insert_writer.generate_from_values(pg_url,
                                                     destination='tab2',
                                                     number_of_tuples=4)
 
@@ -96,8 +107,8 @@ def test_generate_multiple_value_tuples_pg(pg_db_with_tables):
     assert result.count('DEFAULT  -- ==> col4') == 4
     assert result.count('VALUES') == 1
 
-def test_generate_multiple_value_tuples_sqlite(sqlite_db_with_tables):
-    result = sql_insert_writer.generate_from_values(sqlite_db_with_tables,
+def test_generate_multiple_value_tuples_sqlite(sqlite_url):
+    result = sql_insert_writer.generate_from_values(sqlite_url,
                                                     destination='tab2',
                                                     number_of_tuples=4)
 
@@ -106,7 +117,9 @@ def test_generate_multiple_value_tuples_sqlite(sqlite_db_with_tables):
     assert result.count('NULL  -- ==> col4') == 4
     assert result.count('VALUES') == 1
 
-def _test_generate_from_one_source(db_url):
+# test INSERT INTO... SELECT..., from one table
+
+def _test_generate_from_one_table(db_url):
     result = sql_insert_writer.generate_from_tables(db_url=db_url,
                                                     destination='tab1',
                                                     sources=['tab2'])
@@ -115,94 +128,123 @@ def _test_generate_from_one_source(db_url):
     assert 'col4  -- ==> col4' in result
     return result
 
-def test_generate_from_one_source_pg(pg_db_with_tables):
-    result = _test_generate_from_one_source(pg_db_with_tables)
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_generate_from_one_table_pg(pg_url):
+    result = _test_generate_from_one_table(pg_url)
     assert 'DEFAULT,  -- ==> col2' in result
 
-def test_generate_from_one_source_sqlite(sqlite_db_with_tables):
-    result = _test_generate_from_one_source(sqlite_db_with_tables)
+def test_generate_from_one_table_sqlite(sqlite_url):
+    result = _test_generate_from_one_table(sqlite_url)
     assert 'NULL,  -- ==> col2' in result
 
-def test_generate_from_one_source_with_qualified(pg_db_with_tables):
-    result = sql_insert_writer.generate_from_tables(db_url=pg_db_with_tables,
+# test INSERT INTO... SELECT..., from one table, qualified table names
+
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def _test_generate_from_one_table_with_qualified(db_url):
+    result = sql_insert_writer.generate_from_tables(db_url=db_url,
                                                     destination='tab1',
                                                     sources=['tab2'],
                                                     qualify=True)
     assert 'tab2.col1,  -- ==> col1' in result
-    assert 'DEFAULT,  -- ==> col2' in result
     assert 'tab2.col3,  -- ==> col3' in result
     assert 'tab2.col4  -- ==> col4' in result
+    return result
 
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_generate_from_one_table_with_qualified_pg(pg_url):
+    result = _test_generate_from_one_table_with_qualified(pg_url)
+    assert 'DEFAULT,  -- ==> col2' in result
 
-def test_generate_from_three_sources(pg_db_with_tables):
+def test_generate_from_one_table_with_qualified_sqlite(sqlite_url):
+    result = _test_generate_from_one_table_with_qualified(sqlite_url)
+    assert 'NULL,  -- ==> col2' in result
+
+# test INSERT INTO... SELECT..., from three tables
+
+def _test_generate_from_three_sources(db_url):
     result = sql_insert_writer.generate_from_tables(
-        db_url=pg_db_with_tables,
+        db_url=db_url,
         destination='tab1',
         sources=['tab2', 'tab3', 'tab4'])
     assert 'tab2.col1,  -- ==> col1' in result
     assert 'tab3.col2,  -- ==> col2' in result
     assert 'tab2.col3,  -- ==> col3' in result
     assert 'tab2.col4  -- ==> col4' in result
-
-
-def test_generate_from_three_sources_includes_join(pg_db_with_tables):
-    result = sql_insert_writer.generate_from_tables(
-        db_url=pg_db_with_tables,
-        destination='tab1',
-        sources=['tab2', 'tab3', 'tab4'])
     assert 'JOIN tab3 ON (tab2' in result
 
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_generate_from_three_sources_pg(pg_url):
+    _test_generate_from_three_sources(pg_url)
 
-def test_bad_dest_table_name_raises(pg_db_with_tables):
+def test_generate_from_three_sources_sqlite(sqlite_url):
+    _test_generate_from_three_sources(sqlite_url)
+
+# Test nonexistent destination table name throws error
+
+def _test_bad_dest_table_name_raises(db_url):
     with pytest.raises(sql_insert_writer.BadDBNameError):
-        sql_insert_writer.generate_from_tables(db_url=pg_db_with_tables,
+        sql_insert_writer.generate_from_tables(db_url=db_url,
                                                destination='no_such_table',
                                                sources=['tab1'])
 
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_bad_dest_table_name_raises_pg(pg_url):
+    _test_bad_dest_table_name_raises(pg_url)
 
-def test_bad_source_table_name_raises(pg_db_with_tables):
+def test_bad_dest_table_name_raises_sqlite(sqlite_url):
+    _test_bad_dest_table_name_raises(sqlite_url)
+
+# Test nonexistent source table name throws error
+
+def _test_bad_source_table_name_raises(db_url):
     with pytest.raises(sql_insert_writer.BadDBNameError):
         sql_insert_writer.generate_from_tables(
-            db_url=pg_db_with_tables,
+            db_url=db_url,
             destination='tab1',
             sources=['tab2', 'no_such_table'])
 
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_bad_source_table_name_raises_pg(pg_url):
+    _test_bad_source_table_name_raises(pg_url)
+
+def test_bad_source_table_name_raises_sqlite(sqlite_url):
+    _test_bad_source_table_name_raises(sqlite_url)
 
 @pytest.mark.skip
-def omit_autoincrementing_primary_keys(pg_db_with_tables):
+def omit_autoincrementing_primary_keys(pg_url):
     assert False
 
 
-def test_command_line_interface(pg_db_with_tables):
+def test_command_line_interface(sqlite_url):
     """Test the CLI."""
     runner = CliRunner()
 
     # test invoking VALUE insert, one tuple
-    result = runner.invoke(cli.main, ['tab1', '--db', pg_db_with_tables])
+    result = runner.invoke(cli.main, ['tab1', '--db', sqlite_url])
     assert result.exit_code == 0
     assert 'tab1' in result.output
 
     # test invoking VALUE insert, two tuples
     result = runner.invoke(cli.main,
-                           ['tab1', '--tuples', 2, '--db', pg_db_with_tables])
+                           ['tab1', '--tuples', 2, '--db', sqlite_url])
     assert result.exit_code == 0
     assert 'tab1' in result.output
 
     # test inserting from one table
     result = runner.invoke(cli.main, ['tab1', 'tab2', '--db',
-                                      pg_db_with_tables])
+                                      sqlite_url])
     assert result.exit_code == 0
     assert 'tab2' in result.output
 
     # test inserting from three tables
     result = runner.invoke(cli.main, ['tab1', 'tab2', 'tab3', 'tab4', '--db',
-                                      pg_db_with_tables])
+                                      sqlite_url])
     assert result.exit_code == 0
     assert 'tab2' in result.output
 
     # # test that using --tuples with source tables raises
     # with pytest.raises(BadOptionUsage):
-    #     runner.invoke(cli.main, ['tab1', 'tab2', '--tuples', 2, '--db', pg_db_with_tables])
+    #     runner.invoke(cli.main, ['tab1', 'tab2', '--tuples', 2, '--db', sqlite_url])
 
     # test help
     help_result = runner.invoke(cli.main, ['--help'])

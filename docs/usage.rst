@@ -2,6 +2,100 @@
 Usage
 =====
 
-To use sql_insert_writer in a project::
+Used at the command line to auto-generate an INSERT statement.  The generated
+statement will generally require some hand-editing for your own purposes, but
+the auto-generated column list and comments indicating destinations should save
+you tedium and errors.
 
-    import sql_insert_writer
+Specifying database
+-------------------
+
+- Accepts [SQLAlchemy database URLs](http://docs.sqlalchemy.org/en/latest/core/engines.html) with `--db` option.
+Defaults to environment variable `$DATABASE_URL`
+
+Generally used from the command line.
+
+Sample data
+-----------
+
+To try the examples in your own PostgreSQL instance, run the data setup SQL commands from
+`here <sample_tables.sql>`.
+
+Simple INSERT statements
+------------------------
+
+::
+
+    $ sql_insert_writer animal
+
+    INSERT INTO animal (
+      id,
+      kg,
+      species_id
+    )
+    VALUES
+    (
+      DEFAULT,  -- ==> id
+      DEFAULT,  -- ==> kg
+      DEFAULT  -- ==> species_id
+    )
+
+Use `--tuples` to insert multiple rows::
+
+    $ sql_insert_writer --tuples 2 animal
+
+    INSERT INTO animal (
+      id,
+      kg,
+      species_id
+    )
+    VALUES
+    (
+      DEFAULT,  -- ==> id
+      DEFAULT,  -- ==> kg
+      DEFAULT  -- ==> species_id
+    ),
+    (
+      DEFAULT,  -- ==> id
+      DEFAULT,  -- ==> kg
+      DEFAULT  -- ==> species_id
+    )
+
+INSERT... FROM
+--------------
+
+From a single table::
+
+    $ sql_insert_writer pet animal
+
+    INSERT INTO pet (
+      id,
+      name,
+      kg,
+      species_name,
+      habitat_name
+    )
+    SELECT
+      id,  -- ==> id
+      DEFAULT,  -- ==> name
+      kg,  -- ==> kg
+      DEFAULT,  -- ==> species_name
+      DEFAULT  -- ==> habitat_name
+    FROM animal
+
+From multiple tables::
+
+    $ sql_insert_writer animal species habitat
+
+    INSERT INTO animal (
+      id,
+      kg,
+      species_id
+    )
+    SELECT
+      DEFAULT,  -- ==> id
+      DEFAULT,  -- ==> kg
+      species.species_id  -- ==> species_id
+    FROM species
+    JOIN habitat ON (species. = habitat.)
+
