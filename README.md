@@ -1,20 +1,12 @@
 # sql_insert_writer
 
 [![PyPI Status](https://img.shields.io/pypi/v/sql_insert_writer.svg)](https://pypi.python.org/pypi/sql_insert_writer)
-[![Coverage Status](https://coveralls.io/repos/github/18F/sql_insert_writer.svg?branch=master)](https://coveralls.io/github/18F/sql_insert_writer?branch=master)
-[![Code Climate](https://codeclimate.com/github/18F/sql_insert_writer.svg)](https://codeclimate.com/github/18F/sql_insert_writer)
-[![Accessibility](https://continua11y.18f.gov/18F/sql_insert_writer?branch=master)](https://continua11y.18f.gov/18F/sql_insert_writer)
-
-
-<a href="https://pypi.python.org/pypi/sql_insert_writer">
-  <img src="https://img.shields.io/pypi/v/sql_insert_writer.svg"
-  alt="PyPI shield">
-</a>
-
-<a href="https://sql-insert-writer.readthedocs.io/en/latest/?badge=latest ">
-  <img src=https://readthedocs.org/projects/sql-insert-writer/badge/?version=latest"
-  alt="ReadTheDocs shield">
-</a>
+[![CircleCI](https://circleci.com/gh/18F/sql_insert_writer.svg?style=svg)](https://circleci.com/gh/18F/sql_insert_writer)
+[![Code Climate](https://codeclimate.com/github/18F/sql_insert_writer/badges/gpa.svg)](https://codeclimate.com/github/18F/sql_insert_writer)
+[![Test Coverage](https://codeclimate.com/github/18F/sql_insert_writer/badges/coverage.svg)](https://codeclimate.com/github/18F/sql_insert_writer/coverage)
+[![Dependency Status](https://gemnasium.com/badges/github.com/18F/sql_insert_writer.svg)](https://gemnasium.com/github.com/18F/sql_insert_writer)
+[![ReadTheDocs](https://readthedocs.org/projects/sql-insert-writer/badge/?version=latest)]
+(https://sql-insert-writer.readthedocs.io/en/latest/?badge=latest)
 
 Helps generate highly readable SQL INSERT statements
 
@@ -70,7 +62,7 @@ The output of `sql_insert_writer` will rarely be fully ready to execute, but it 
 
 ## Features
 
-- Supports PostgreSQL, SQLite
+- Supports PostgreSQL, SQLite, MySQL
 - Accepts [SQLAlchemy database URLs](http://docs.sqlalchemy.org/en/latest/core/engines.html) with `--db` option.  Defaults to environment variable `$DATABASE_URL`.
 - Any number of source tables; columns chosen in order specified
 - Any number of tuples in `VALUES` clause with `--tuples` option

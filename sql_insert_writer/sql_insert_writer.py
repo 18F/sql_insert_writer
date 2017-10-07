@@ -5,17 +5,19 @@ import records
 
 from sqlalchemy.exc import ResourceClosedError
 
+
 class BadDBNameError(Exception):
     pass
 
+
 def db_engine_name(db_url):
-    result = db_url.split(':')[0]
+    result = db_url.split(':')[0].split('+')[0]
     if result == 'postgres':
         result = 'postgresql'
     return result
 
 
-def col_data_pg(db, table_name):
+def col_data_info_schema(db, table_name):
     """Gets metadata for a PostgreSQL table's columns"""
 
     qry = '''SELECT column_name, data_type
@@ -38,14 +40,15 @@ def col_data_sqlite(db, table_name):
     try:
         curs.execute(qry)
         return [AttrDict({'column_name': row.name,
-                        'data_type': row.type}) for row in db.query(qry)]
+                          'data_type': row.type}) for row in db.query(qry)]
     except ResourceClosedError:  # thus SQLite reacts to nonexistent table
         return []
 
 
 col_data_functions = {
-    'postgresql': col_data_pg,
+    'postgresql': col_data_info_schema,
     'sqlite': col_data_sqlite,
+    'mysql': col_data_info_schema,
 }
 
 
@@ -197,8 +200,8 @@ def generate_from_values(db_url, destination, number_of_tuples=1):
             comma = ''
         else:
             comma = ','
-        source_column_block.append('{}{}{}  -- ==> {}'.format(INDENT, no_value(db_url
-        ), comma, col.column_name))
+        source_column_block.append('{}{}{}  -- ==> {}'.format(INDENT, no_value(
+            db_url), comma, col.column_name))
 
     dest_column_block = ',\n'.join(dest_column_block)
     source_column_block = '\n'.join(source_column_block)

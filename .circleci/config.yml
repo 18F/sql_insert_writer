@@ -42,13 +42,24 @@ jobs:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
 
+      - run:
+          name: CodeClimate before-build
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
+
       # run tests!
       - run:
           name: run tests
           command: |
             . venv/bin/activate
-            py.test
+            py.test --cov=sql_insert_writer tests/
 
+      - run:
+          name: CodeClimate after-build
+          # Attempt to submit a report, but don't fail the build if this fails (`|| true`)
+          command: ./cc-test-reporter after-build -t coverage.py --exit-code $? || true
 
       - store_artifacts:
           path: test-reports
