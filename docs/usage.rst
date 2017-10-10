@@ -10,7 +10,7 @@ you tedium and errors.
 Specifying database
 -------------------
 
-- Accepts [SQLAlchemy database URLs](http://docs.sqlalchemy.org/en/latest/core/engines.html) with `--db` option.
+- Accepts `SQLAlchemy database URLs <http://docs.sqlalchemy.org/en/latest/core/engines.html>`_ with `--db` option.
 Defaults to environment variable `$DATABASE_URL`
 
 Generally used from the command line.
@@ -19,7 +19,7 @@ Sample data
 -----------
 
 To try the examples in your own PostgreSQL instance, run the data setup SQL commands from
-`here <sample_tables.sql>`.
+`here <sample_tables.sql>`_.
 
 Simple INSERT statements
 ------------------------

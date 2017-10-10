@@ -58,7 +58,5 @@ PostgreSQL: `pip install psycopg2`
 SQLite3: (No install necessary)
 
 
-
-
 .. _Github repo: https://github.com/18F/sql_insert_writer
 .. _tarball: https://github.com/18F/sql_insert_writer/tarball/master

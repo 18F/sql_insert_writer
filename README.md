@@ -5,8 +5,6 @@
 [![Code Climate](https://codeclimate.com/github/18F/sql_insert_writer/badges/gpa.svg)](https://codeclimate.com/github/18F/sql_insert_writer)
 [![Test Coverage](https://codeclimate.com/github/18F/sql_insert_writer/badges/coverage.svg)](https://codeclimate.com/github/18F/sql_insert_writer/coverage)
 [![Dependency Status](https://gemnasium.com/badges/github.com/18F/sql_insert_writer.svg)](https://gemnasium.com/github.com/18F/sql_insert_writer)
-[![ReadTheDocs](https://readthedocs.org/projects/sql-insert-writer/badge/?version=latest)]
-(https://sql-insert-writer.readthedocs.io/en/latest/?badge=latest)
 
 Helps generate highly readable SQL INSERT statements
 
@@ -66,6 +64,14 @@ The output of `sql_insert_writer` will rarely be fully ready to execute, but it 
 - Accepts [SQLAlchemy database URLs](http://docs.sqlalchemy.org/en/latest/core/engines.html) with `--db` option.  Defaults to environment variable `$DATABASE_URL`.
 - Any number of source tables; columns chosen in order specified
 - Any number of tuples in `VALUES` clause with `--tuples` option
+
+## Installtion
+
+[Installation instructions](docs/installation.rst)
+
+## Usage
+
+See usage examples [here](docs/usage.rst)
 
 ## Planned features
 
