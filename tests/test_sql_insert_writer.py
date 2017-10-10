@@ -39,6 +39,8 @@ TABLE_DEFINITIONS = [
     'CREATE TABLE tab2 (col1 serial primary key, col3 text, col4 text)',
     'CREATE TABLE tab3 (col1 serial primary key, col2 text, col4 text)',
     'CREATE TABLE tab4 (col1 serial primary key, col2 text, col3 text)',
+    'CREATE TABLE tab5 (col1 serial primary key, datecol1 date, intcol1 integer, col2 text)',
+    'CREATE TABLE tab5_all_text (col1 serial primary key, datecol1 text, intcol1 text, col2 text)',
 ]
 
 # pytest-postgresql works locally, but it contains an unshakeable
@@ -229,6 +231,27 @@ def test_bad_source_table_name_raises_pg(pg_url):
 
 def test_bad_source_table_name_raises_sqlite(sqlite_url):
     _test_bad_source_table_name_raises(sqlite_url)
+
+
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_type_casting_values_insert(pg_url):
+    result = sql_insert_writer.generate_from_values(db_url=pg_url,
+                                                    destination='tab5',
+                                                    type_cast=True)
+    assert 'DEFAULT::date,  -- ==> datecol1' in result
+    assert 'DEFAULT::integer,  -- ==> intcol1' in result
+
+
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_type_casting_insert_from(pg_url):
+    result = sql_insert_writer.generate_from_tables(
+        db_url=pg_url,
+        destination='tab5',
+        sources=['tab5_all_text', ],
+        type_cast=True)
+    assert 'datecol1::date,  -- ==> datecol1' in result
+    assert 'intcol1::integer,  -- ==> intcol1' in result
+    assert 'col2  -- ==> col2' in result
 
 
 @pytest.mark.skip

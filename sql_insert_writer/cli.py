@@ -18,19 +18,24 @@ from sql_insert_writer import sql_insert_writer
 @click.option('--qualify/--no-qualify',
               default=False,
               help='Include source table name even if only one source')
-def main(destination, sources, db, tuples, qualify):
+@click.option('--cast/--no-cast',
+              default=False,
+              help='CAST values as destination data type')
+def main(destination, sources, db, tuples, qualify, cast):
     """Console script for sql_insert_writer."""
     if sources:
         result = sql_insert_writer.generate_from_tables(
             db_url=db,
             destination=destination,
             sources=sources,
-            qualify=qualify)
+            qualify=qualify,
+            type_cast=cast)
     else:
         result = sql_insert_writer.generate_from_values(
             db_url=db,
             destination=destination,
-            number_of_tuples=tuples)
+            number_of_tuples=tuples,
+            type_cast=cast)
     click.echo(result)
 
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """The setup script."""
 
 from setuptools import setup, find_packages
@@ -17,13 +16,11 @@ requirements = [
     'attrdict==2.0.0',
 ]
 
-setup_requirements = [
-    'pytest-runner',
-    # TODO(18F): put setup requirements (distutils extensions, etc.) here
-]
+setup_requirements = ['pytest-runner', ]
 
 test_requirements = [
     'pytest',
+    'pytest-postgresql',
     'psycopg2==2.7.3.1',
 ]
 
@@ -37,9 +34,7 @@ setup(
     url='https://github.com/18F/sql_insert_writer',
     packages=find_packages(include=['sql_insert_writer']),
     entry_points={
-        'console_scripts': [
-            'sql_insert_writer=sql_insert_writer.cli:main',
-        ]
+        'console_scripts': ['sql_insert_writer=sql_insert_writer.cli:main', ]
     },
     include_package_data=True,
     install_requires=requirements,
@@ -51,15 +46,15 @@ setup(
         'Intended Audience :: Developers',
         'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: SQL',
+        'Topic :: Database',
+        'Topic :: Software Development :: Code Generators',
     ],
     test_suite='tests',
     tests_require=test_requirements,
-    setup_requires=setup_requirements,
-)
+    setup_requires=setup_requirements, )
