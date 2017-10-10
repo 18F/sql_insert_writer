@@ -54,12 +54,13 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            py.test --cov=sql_insert_writer tests/
+            py.test --cov=sql_insert_writer --cov-report xml:coverage.xml tests/
 
       - run:
           name: CodeClimate after-build
           # Attempt to submit a report, but don't fail the build if this fails (`|| true`)
-          command: ./cc-test-reporter after-build -t coverage.py --exit-code $? || true
+          # command: ./cc-test-reporter after-build -t coverage.py --exit-code $? || true
+          command: ./cc-test-reporter after-build -t coverage.py --exit-code $?
 
       - store_artifacts:
           path: test-reports
