@@ -83,6 +83,9 @@ FROM {from_clause}'''
 def remove_last(target, remove_me):
     """
     Returns string `target` with last occurance of `remove_me` removed
+
+    >>> remove_last('evacuate valorous vampires', 'va')
+    'evacuate valorous mpires'
     """
 
     before = target[:target.rfind(remove_me)]
