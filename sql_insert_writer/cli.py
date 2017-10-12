@@ -6,12 +6,13 @@ from sql_insert_writer import sql_insert_writer
 
 
 @click.command()
+@click.version_option()
 @click.argument('destination')
 @click.argument('sources', nargs=-1)
-@click.option('--db',
+@click.option('-d', '--db',
               envvar='DATABASE_URL',
               help='Database URL, RFC-1738 / SQLAlchemy format')
-@click.option('--tuples',
+@click.option('-t', '--tuples',
               type=click.IntRange(min=1),
               default=1,
               help='Number of VALUES tuples')
