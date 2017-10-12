@@ -18,8 +18,8 @@ Generally used from the command line.
 Sample data
 -----------
 
-To try the examples in your own PostgreSQL instance, run the data setup SQL commands from
-`here <sample_tables.sql>`_.
+To try the examples in your own PostgreSQL instance, run the `data setup SQL commands
+<sample_tables.sql>`_.
 
 Simple INSERT statements
 ------------------------

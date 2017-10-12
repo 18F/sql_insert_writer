@@ -60,7 +60,8 @@ jobs:
           name: CodeClimate after-build
           # Attempt to submit a report, but don't fail the build if this fails (`|| true`)
           command: ./cc-test-reporter after-build -t coverage.py --exit-code $? || true
-          # command: ./cc-test-reporter after-build -t coverage.py --exit-code $?
+          # For debugging upload of current failure to upload coverage results:
+          # command: ./cc-test-reporter -p ~/repo/sql_insert_writer after-build -t coverage.py --exit-code $?
 
       - store_artifacts:
           path: test-reports

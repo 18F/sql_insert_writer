@@ -6,10 +6,10 @@ flake8==3.4.1
 tox==2.9.1
 coverage==4.4.1
 Sphinx==1.6.4
-pytest==3.2.2
+pytest==3.2.3
 pytest-cov
 codeclimate-test-reporter
 pytest-runner==2.12.1
 codeclimate-test-reporter
 psycopg2==2.7.3.1
-pytest-postgresql==1.3.0
+pytest-postgresql==1.3.1

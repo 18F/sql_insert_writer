@@ -5,9 +5,9 @@ Credits
 Development Lead
 ----------------
 
-* 18F <catherine.devlin@gsa.gov>
+* <catherine.devlin@gsa.gov> at `18F <https://18f.gsa.gov/>`_
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Code review and suggestions from 18F's `Atul Varma <https://github.com/toolness>`_

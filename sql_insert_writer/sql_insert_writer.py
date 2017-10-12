@@ -82,7 +82,7 @@ FROM {from_clause}'''
 
 def remove_last(target, remove_me):
     """
-    Returns string `target` with last occurance of `remove_me` removed
+    Returns string `target` with last occurence of `remove_me` removed
 
     >>> remove_last('evacuate valorous vampires', 'va')
     'evacuate valorous mpires'
@@ -122,8 +122,7 @@ def cast(column_str, new_type, db_url):
     if engine_name == 'postgresql':
         return '{}::{}'.format(column_str, new_type)
     elif engine_name == 'mysql':
-        return 'CAST({} AS {})'.format(column_str,
-                                       new_type)  # TODO: include data length
+        return 'CAST({} AS {})'.format(column_str, new_type)
 
 
 def generate_from_tables(db_url,
