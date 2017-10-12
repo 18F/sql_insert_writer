@@ -12,7 +12,7 @@ To install sql_insert_writer, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install sql_insert_writer
+    $ pip install sql-insert-writer
 
 This is the preferred method to install sql_insert_writer, as it will always install the most recent stable release.
 
