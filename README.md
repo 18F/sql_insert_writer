@@ -8,6 +8,8 @@
 
 Helps generate highly readable SQL INSERT statements
 
+Calling with one table name creates an `INSERT INTO... VALUES` statement:
+
 ```
 $ sql_insert_writer pet
 
@@ -26,6 +28,13 @@ VALUES
   DEFAULT,  -- ==> planet
   DEFAULT  -- ==> kg
 )
+```
+
+If more table names are added, will generate an `INSERT INTO... SELECT FROM`
+statement, matching as many column names as it can between the destination
+and source table(s):
+
+```
 
 $ sql_insert_writer pet animal
 
@@ -45,7 +54,9 @@ SELECT
 FROM animal
 ```
 
-* Documentation: https://sql-insert-writer.readthedocs.io.
+## More usage examples
+
+https://github.com/18F/sql_insert_writer
 
 ## Rationale
 
@@ -66,13 +77,14 @@ The output of `sql_insert_writer` will rarely be fully ready to execute, but it 
 - Any number of tuples in `VALUES` clause with `--tuples` option
 - Explicitly cast to destination column type with `--cast` option
 
-## Installtion
+## Installation
 
 [Installation instructions](docs/installation.rst)
 
-## Usage
-
-See usage examples [here](docs/usage.rst)
+Development installation instructions, so that
+you can modify the code and contribute your
+improvements back to the project, are included
+in the [CONTRIBUTING documentation](CONTRIBUTING.rst).
 
 ## Planned features
 

@@ -21,7 +21,7 @@ setup_requirements = ['pytest-runner', ]
 test_requirements = [
     'pytest',
     'pytest-postgresql',
-    'psycopg2==2.7.3.1',
+    'psycopg2>=2.7.3.1',
 ]
 
 setup(

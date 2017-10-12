@@ -75,11 +75,6 @@ def sqlite_url(request):
     conn.commit()
     return 'sqlite:///' + sqlite_file.name
 
-# @pytest.fixture(params=[sqlite_url, pg_url])
-# def all_db_with_tables(request, postgresql):
-#     return request.param(request=request, postgresql=postgresql)
-#     # Fails with pg_url() got an unexpected keyword argument 'request'
-#     # or AttributeError: 'function' object has no attribute '_instantiate_plugins'
 
 # test INSERT... VALUES, one tuple
 
@@ -285,9 +280,10 @@ def test_command_line_interface(sqlite_url):
     assert result.exit_code == 0
     assert 'tab2' in result.output
 
-    # # test that using --tuples with source tables raises
-    # with pytest.raises(BadOptionUsage):
-    #     runner.invoke(cli.main, ['tab1', 'tab2', '--tuples', 2, '--db', sqlite_url])
+    # test that using --tuples with source tables raises nonzero exit code
+    result = runner.invoke(cli.main, ['tab1', 'tab2',
+                                      '--tuples', 2, '--db', sqlite_url])
+    assert result.exit_code == 2
 
     # test help
     help_result = runner.invoke(cli.main, ['--help'])

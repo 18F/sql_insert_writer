@@ -24,6 +24,8 @@ from sql_insert_writer import sql_insert_writer
 def main(destination, sources, db, tuples, qualify, cast):
     """Console script for sql_insert_writer."""
     if sources:
+        if tuples > 1:
+            raise click.BadOptionUsage('Use --tuples only when no source tables specified')
         result = sql_insert_writer.generate_from_tables(
             db_url=db,
             destination=destination,
