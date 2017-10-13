@@ -2,58 +2,60 @@
 -- which is actually not generally done, but it's nice to demo
 -- this package with
 
+DROP TABLE IF EXISTS pet;
 DROP TABLE IF EXISTS animal;
 DROP TABLE IF EXISTS species;
 DROP TABLE IF EXISTS habitat;
 
 CREATE TABLE habitat (
-    habitat_id SERIAL PRIMARY KEY,
-    habitat_name TEXT NOT NULL
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL
 );
 
 INSERT INTO habitat (
-  habitat_name
+  name
 )
 VALUES
 (
-  'taiga'  -- ==> habitat_name
+  'taiga'  -- ==> name
 ),
 (
-  'freshwater lakes'  -- ==> habitat_name
+  'freshwater lakes'  -- ==> name
 ),
 (
-  'old barns'  -- ==> habitat_name
+  'old barns'  -- ==> name
 );
+
 
 CREATE TABLE species (
     species_id SERIAL PRIMARY KEY,
-    species_name TEXT,
-    habitat_id INTEGER REFERENCES habitat(habitat_id)
+    name TEXT,
+    habitat_id INTEGER REFERENCES habitat(id)
 );
 
 INSERT INTO species (
-  species_name,
+  name,
   habitat_id
 )
 VALUES
 (
-  'caribou',  -- ==> species_name
+  'caribou',  -- ==> name
   1  -- ==> habitat_id
 ),
 (
-  'barn owl',  -- ==> species_name
+  'barn owl',  -- ==> name
   3  -- ==> habitat_id
 ),
 (
-  'common loon',  -- ==> species_name
+  'common loon',  -- ==> name
   2  -- ==> habitat_id
 ),
 (
-  'mosquito',  -- ==> species_name
+  'mosquito',  -- ==> name
   1  -- ==> habitat_id
 ),
 (
-  'walleye pike',  -- ==> species_name
+  'walleye pike',  -- ==> name
   2  -- ==> habitat_id
 );
 

@@ -85,17 +85,21 @@ From a single table::
 
 From multiple tables::
 
-    $ sql_insert_writer animal species habitat
+    $ sql_insert_writer pet animal species habitat
 
-    INSERT INTO animal (
+    INSERT INTO pet (
       id,
+      name,
       kg,
-      species_id
+      species_name,
+      habitat_name
     )
     SELECT
-      DEFAULT,  -- ==> id
-      DEFAULT,  -- ==> kg
-      species.species_id  -- ==> species_id
-    FROM species
-    JOIN habitat ON (species. = habitat.)
-
+      animal.id,  -- ==> id
+      species.name,  -- ==> name
+      animal.kg,  -- ==> kg
+      species.name,  -- ==> species_name
+      habitat.name  -- ==> habitat_name
+    FROM animal
+    JOIN species ON (animal. = species.)
+    JOIN habitat ON (animal. = habitat.)
