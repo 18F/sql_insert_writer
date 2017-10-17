@@ -41,6 +41,7 @@ TABLE_DEFINITIONS = [
     'CREATE TABLE tab4 (col1 serial primary key, col2 text, col3 text)',
     'CREATE TABLE tab5 (col1 serial primary key, datecol1 date, intcol1 integer, col2 text)',
     'CREATE TABLE tab5_all_text (col1 serial primary key, datecol1 text, intcol1 text, col2 text)',
+    'CREATE TABLE tab_qual_cols (tab3_col2 text, tab4_col2 text)',
 ]
 
 # pytest-postgresql works locally, but it contains an unshakeable
@@ -74,7 +75,6 @@ def sqlite_url(request):
         cur.execute(table_definition)
     conn.commit()
     return 'sqlite:///' + sqlite_file.name
-
 
 # test INSERT... VALUES, one tuple
 
@@ -190,6 +190,30 @@ def test_generate_from_three_sources_pg(pg_url):
 def test_generate_from_three_sources_sqlite(sqlite_url):
     _test_generate_from_three_sources(sqlite_url)
 
+# test matching column names with embedded table name
+
+
+def _test_match_embedded_table_names(db_url):
+    """
+    Destination table includes source col tables in col names:
+    CREATE TABLE tab_qual_cols (tab3_col2 text, tab4_col2 text)
+    """
+    result = sql_insert_writer.generate_from_tables(db_url=db_url,
+                                                    destination='tab_qual_cols',
+                                                    sources=['tab3',
+                                                             'tab4', ])
+    assert 'tab3.col2,  -- ==> tab3_col2' in result
+    assert 'tab4.col2  -- ==> tab4_col2' in result
+
+
+@pytest.mark.skipif(PG_CTL_MISSING, reason='PostgreSQL not installed locally')
+def test_match_embedded_table_names_pg(pg_url):
+    _test_match_embedded_table_names(pg_url)
+
+
+def test_match_embedded_table_names_sqlite(sqlite_url):
+    _test_match_embedded_table_names(sqlite_url)
+
 # Test nonexistent destination table name throws error
 
 
@@ -281,8 +305,8 @@ def test_command_line_interface(sqlite_url):
     assert 'tab2' in result.output
 
     # test that using --tuples with source tables raises nonzero exit code
-    result = runner.invoke(cli.main, ['tab1', 'tab2',
-                                      '--tuples', 2, '--db', sqlite_url])
+    result = runner.invoke(cli.main, ['tab1', 'tab2', '--tuples', 2, '--db',
+                                      sqlite_url])
     assert result.exit_code == 2
 
     # test help

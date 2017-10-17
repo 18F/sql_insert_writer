@@ -150,12 +150,16 @@ def generate_from_tables(db_url,
     dest_column_block = []
     source_column_block = []
 
-    # Each column should have only one source - sources listed first take
-    # precedence
     source_columns = {}
+    # Assemble map of {dest col name: dest col}
     for source in reversed(sources):
-        source_columns.update({col.column_name: col
-                               for col in col_data(db, source)})
+        # reversed so first-listed source tables overwrite later ones
+        for col in col_data(db, source):
+            for dest_col_name in [
+                    '{table_name}{column_name}'.format(**col),
+                    '{table_name}_{column_name}'.format(**col), col.column_name
+            ]:
+                source_columns[dest_col_name] = col
 
     qualify = (len(sources) > 1) or qualify
     for dest_col in col_data(db, destination):

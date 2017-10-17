@@ -16,17 +16,17 @@ $ sql_insert_writer pet
 INSERT INTO pet (
   id,
   name,
+  kg,
   species_name,
-  planet,
-  kg
+  habitat_name
 )
 VALUES
 (
   DEFAULT,  -- ==> id
   DEFAULT,  -- ==> name
+  DEFAULT,  -- ==> kg
   DEFAULT,  -- ==> species_name
-  DEFAULT,  -- ==> planet
-  DEFAULT  -- ==> kg
+  DEFAULT  -- ==> habitat_name
 )
 ```
 
@@ -41,22 +41,20 @@ $ sql_insert_writer pet animal
 INSERT INTO pet (
   id,
   name,
+  kg,
   species_name,
-  planet,
-  kg
+  habitat_name
 )
 SELECT
   id,  -- ==> id
-  name,  -- ==> name
-  species_name,  -- ==> species_name
-  planet,  -- ==> planet
-  DEFAULT  -- ==> kg
+  DEFAULT,  -- ==> name
+  kg,  -- ==> kg
+  DEFAULT,  -- ==> species_name
+  DEFAULT  -- ==> habitat_name
 FROM animal
 ```
 
-## More usage examples
-
-https://github.com/18F/sql_insert_writer
+## [More usage examples](docs/usage.rst)
 
 ## Rationale
 
